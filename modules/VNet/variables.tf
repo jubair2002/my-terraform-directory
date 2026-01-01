@@ -1,20 +1,14 @@
-variable "resource_group_name" {
+variable "rg_name" {
   type = string
-}
-
-variable "subnet-name" {
-  type = string
-}
-
-variable "azureVnet_name" {
-  type = string
-}
-
-variable "vnet_addr_space" {
-  type = list(string)
 }
 variable "rg_location" {
   type = string
+}
+variable "vnet_name" {
+  type = string
+}
+variable "vnet_addr_space" {
+  type = list(string)
 }
 variable "vnet_dns_servers" {
   type = list(string)

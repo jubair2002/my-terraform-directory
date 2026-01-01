@@ -1,18 +1,8 @@
-resource "azurerm_resource_group" "rg" {
-  name     = "myrg-fortest"
-  location = "eastasia"
-  tags = {
-    environment = "test"
-  }
-}
-data "azurerm_virtual_network" "my-vnet-1" {
-  name                = var.azureVnet_name
-  resource_group_name = var.resource_group_name
-}
-
-resource "azurerm_subnet" "subnet-2" {
-  name                 = var.subnet-name
-  resource_group_name  = data.azurerm_virtual_network.my-vnet-1.resource_group_name
-  virtual_network_name = data.azurerm_virtual_network.my-vnet-1.name
-  address_prefixes     = ["10.0.3.0/24"]
+module "vnet" {
+  source           = "./modules/VNet"
+  rg_name          = var.resource_group_name
+  rg_location      = var.rg_location
+  vnet_name        = var.azureVnet_name
+  vnet_addr_space  = var.vnet_addr_space
+  vnet_dns_servers = var.vnet_dns_servers
 }
