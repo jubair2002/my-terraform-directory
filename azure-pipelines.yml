@@ -1,0 +1,120 @@
+trigger: none
+pool: 
+  name: my-personal-pool
+  
+stages:
+  - stage: formatting
+    displayName: Formatting Terraform Files
+    jobs:
+      - job: formatting
+        steps:
+          - checkout: self
+          - task: AzureCLI@2
+            displayName: Terraform Format
+            inputs:
+              azureSubscription: 'terrarorm-svc-conn'
+              scriptType: 'bash'
+              scriptLocation: 'inlineScript'
+              inlineScript: |
+                terraform init
+                terraform fmt -recursive -check
+                terraform fmt -recursive
+
+  - stage: validate
+    displayName: Validate Terraform Configuration
+    dependsOn: formatting
+    jobs:
+      - job: validate
+        steps:
+          - checkout: self
+          - task: AzureCLI@2
+            displayName: Terraform Init
+            inputs:
+              azureSubscription: 'terrarorm-svc-conn'
+              scriptType: 'bash'
+              scriptLocation: 'inlineScript'
+              inlineScript: 'terraform init'
+          - task: AzureCLI@2
+            displayName: Terraform Validate
+            inputs:
+              azureSubscription: 'terrarorm-svc-conn'
+              scriptType: 'bash'
+              scriptLocation: 'inlineScript'
+              inlineScript: 'terraform validate'
+
+  - stage: plan
+    displayName: Terraform Plan
+    dependsOn: validate
+    jobs:
+      - job: plan
+        steps:
+          - checkout: self
+          - task: AzureCLI@2
+            displayName: Terraform Init
+            inputs:
+              azureSubscription: 'terrarorm-svc-conn'
+              scriptType: 'bash'
+              scriptLocation: 'inlineScript'
+              inlineScript: 'terraform init'
+          - task: AzureCLI@2
+            displayName: Terraform Plan
+            inputs:
+              azureSubscription: 'terrarorm-svc-conn'
+              scriptType: 'bash'
+              scriptLocation: 'inlineScript'
+              inlineScript: 'terraform plan -out=terraform.tfplan'
+          - publish: terraform.tfplan
+            artifact: terraform.tfplan
+
+  - stage: apply
+    displayName: Apply Infrastructure Resources
+    dependsOn: plan
+    condition: succeeded() 
+    jobs:
+      - deployment: apply
+        displayName: Terraform Apply
+        environment: 'terraform_apply'
+        strategy:
+          runOnce:
+            deploy:
+              steps:
+                - checkout: self 
+                - download: current
+                  artifact: terraform.tfplan
+                - task: AzureCLI@2
+                  displayName: Terraform Apply
+                  inputs:
+                    azureSubscription: 'terrarorm-svc-conn'
+                    scriptType: 'bash'
+                    scriptLocation: 'inlineScript'
+                    inlineScript: |
+                      terraform init -reconfigure
+                      terraform apply -input=false "$(Pipeline.Workspace)/terraform.tfplan/terraform.tfplan"
+
+  - stage: tf_destroy
+    displayName: Destroy Infrastructure Resources
+    dependsOn: apply
+    condition: succeeded() 
+    jobs:
+      - deployment: destroy
+        displayName: Terraform Destroy
+        environment: 'terraform_destroy'
+        strategy:
+          runOnce:
+            deploy:
+              steps:
+                - checkout: self 
+                - task: AzureCLI@2
+                  displayName: Terraform Init
+                  inputs:
+                    azureSubscription: 'terrarorm-svc-conn'
+                    scriptType: 'bash'
+                    scriptLocation: 'inlineScript'
+                    inlineScript: 'terraform init'
+                - task: AzureCLI@2
+                  displayName: Terraform Destroy
+                  inputs:
+                    azureSubscription: 'terrarorm-svc-conn'
+                    scriptType: 'bash'
+                    scriptLocation: 'inlineScript'
+                    inlineScript: 'terraform destroy -auto-approve'
