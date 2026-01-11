@@ -1,9 +1,0 @@
-<svg width="1200" height="800" xmlns="http://www.w3.org/2000/svg">
-  <rect width="1200" height="800" fill="#f5f5f5" stroke="#ddd" stroke-width="2"/>
-  <text x="600" y="380" text-anchor="middle" font-family="Arial, sans-serif" font-size="24" fill="#666">
-    Azure DevOps CI/CD Pipeline
-  </text>
-  <text x="600" y="420" text-anchor="middle" font-family="Arial, sans-serif" font-size="16" fill="#999">
-    Placeholder Image - Replace with actual Azure DevOps pipeline diagram
-  </text>
-</svg>

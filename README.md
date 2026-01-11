@@ -42,7 +42,8 @@ The solution implements a multi-tier network architecture with dedicated subnets
 
 The infrastructure deployment is automated through Azure DevOps CI/CD pipeline:
 
-![Azure DevOps Pipeline](docs/images/azure-devops-pipeline.png)
+![Azure DevOps Pipeline](docs/images/pipeline-iac-proj.png)
+
 
 ## Prerequisites
 
